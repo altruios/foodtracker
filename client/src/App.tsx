@@ -14,14 +14,14 @@ function App() {
     const handle_json = (d: any) => {
         setJson_data(d)
         const options:any = {
-            headers:{
                 method: 'POST',
+
                 headers: {
                   'Accept': 'application/json',
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(d)
-            }
+            
         }
         fetch(BACKEND, options).then(r=>r.json()).then(res=>console.log(res))
     }
