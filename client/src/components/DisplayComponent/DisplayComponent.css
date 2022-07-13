@@ -1,0 +1,11 @@
+.DisplayComponentNutriments{
+    font-size:8px;
+    background-color: white;
+    color:black;
+    text-align: left;
+    border:solid;
+    border-color:red;
+}
+.DisplayComponentNutriments>:nth-child(2n-1){
+    background-color: #DDDDDD;
+}

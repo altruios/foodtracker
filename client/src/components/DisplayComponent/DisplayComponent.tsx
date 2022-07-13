@@ -7,9 +7,9 @@ function DisplayComponent(props:any) {
     return (
         <div className="DisplayComponent">
             <header className="DisplayComponent-header">
-                food item
+                {props.props?.product.product_name}
             </header>
-            <table>
+            <table className="DisplayComponentNutriments">
                 {nutriments?
                 Object.entries(nutriments).map((x:any )=><tr><td>{x[0]}</td><td>{x[1]}</td></tr>)
                 :null}
