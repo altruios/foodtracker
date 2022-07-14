@@ -1,6 +1,7 @@
-import { Schema, model, connect } from 'mongoose';
+import { Schema, model, connect,Mixed, Mongoose} from 'mongoose';
 import {Meal,Product} from './interface' 
 import conn from './.config'
+
 function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {
     return keys.reduce((o, k) => (o[k] = obj[k], o), {} as Pick<T, K>);
   }
@@ -79,12 +80,68 @@ const productKeys:string[] = [
 const mealSchema = new Schema<Meal>({
     code: { type: String, required: true },
     product: { type: {} as Product, required: true },
-    time_stamp: Date
+    time_stamp: {type:Date, required: true}
+  });
+interface ReportItem{
+    value:number;
+    unit:string;
+    percentage:string;
+}
+interface Report{
+    calories:number;
+    totals:Report[]
+}
+const reportItemSchema = new Schema<ReportItem>({
+    value:{type:Number,required:true},
+    unit:{type:String,required:true},
+    percentage:{type:String,required:true},
+})
+
+const ReportSchema = new Schema<Report>({
+    calories: { type: Number, required: true },
+    totals: [reportItemSchema]
   });
 
+const ReportModel = model<Report>('Report',ReportSchema)
 const mealModel = model<Meal>('Meal',mealSchema)
+export async function Report_maker(range:number,db:any){
+    //get data from server
+    const now:Date = new Date()
+    const then:Date = new Date()
+    then.setDate(now.getDate()-range);
+    db.collection("meals").find({
+        day: {
+            $gt: ( now.toISOString()),
+            $lt: ( then.toISOString())
+        }
+    }).toArray((err:Error,result:any)=>{
+        if(err) throw err
+        console.log(result);        
 
-export default async function importMeal(data:any){
+        const report:Report ={
+            calories:result.reduce((acc:number,x:Meal)=>acc+x.product.nutriments.energy),
+            totals:result.map((model:any)=>{
+                const props:any = [];
+                for(const x in model){
+                    if(typeof x =='number'){
+                        props.push(x)
+                    }
+                }
+                return props;
+            }).reduce((acc:any[],x:any)=>{
+                Object.entries(x).every((kp)=>{
+                    if(!acc.hasOwnProperty(kp[0]))
+                        acc[kp[0]]=0;
+                    acc[kp[0]]+= kp[1]
+                })
+                return acc
+            },{})
+        }
+        const r = new ReportModel(report)
+        r.save()
+    })
+}
+export async function importMeal(data:any){
     const product:Product= pick(data.product,...productKeys) as Product
     const meal:Meal= {
         code:data.code,
