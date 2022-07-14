@@ -129,7 +129,7 @@ export async function Report_maker(range:number,db:any){
                 }
                 return props;
             }).reduce((acc:any[],x:any)=>{
-                Object.entries(x).every((kp)=>{
+                Object.entries(x).every((kp:any)=>{
                     if(!acc.hasOwnProperty(kp[0]))
                         acc[kp[0]]=0;
                     acc[kp[0]]+= kp[1]
@@ -157,6 +157,6 @@ export async function importMeal(data:any){
 }
 
 const connDb = () => {
-    return connect(conn);
+    return connect(conn)
   };
   export { connDb };
