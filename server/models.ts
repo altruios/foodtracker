@@ -98,10 +98,19 @@ const ReportSchema = new Schema<Report>({
 
 const ReportModel = model<Report>('Report',ReportSchema)
 const mealModel = model<Meal>('Meal',mealSchema)
-
+export {mealModel}
+export {ReportModel}
 export function get_date_filter (then:Date,now:Date){
+    if(!now){
+        now = new Date()
+        now.setDate(now.getDate()+1)
+    }
+    if(!then){
+        then = new Date()
+        then.setDate(then.getDate()-1)
+    }//then when?
     return {
-        day: {
+        time: {
             $gt: ( now.toISOString()),
             $lt: ( then.toISOString())
         }
@@ -111,26 +120,26 @@ export function get_date_filter (then:Date,now:Date){
 
 
 const exportReport = (data:any)=>{
+    console.log("data is",data);
+    const calories:number = data.result.reduce((acc:number,x:Meal)=>acc+x.product.nutriments.energy_value,0)
+    const totals = data.result.reduce((acc:any,x:any)=>{
+        const nutriments = x.product.nutriments;
+        console.log("n",nutriments)
+        for(const kp in nutriments){
+            console.log(kp,":kp")
+            if(!acc.hasOwnProperty(kp))
+                acc[kp]=nutriments[kp]
+            if(typeof nutriments[kp]=="number")
+                acc[kp]+=nutriments[kp]
+            }
+        
+            return acc
+        },{}
+    )
     const r:Report= {
         type:data.report_type,
-        calories:data.result.reduce((acc:number,x:Meal)=>acc+x.product.nutriments.energy_value),
-        totals:data.result.map((model:any)=>{
-            const props:any = [];
-            for(const x in model){
-                if(typeof x =='number'){
-                    props.push(x)
-                }
-            }
-            return props;
-        }).reduce((acc:any[],x:any)=>{
-            Object.entries(x).every((kp:any)=>{
-                if(!acc.hasOwnProperty(kp[0]))
-                    acc[kp[0]]=0;
-                acc[kp[0]]+= kp[1]
-                })
-                return acc
-            },{}
-        ),
+        calories,
+        totals,
         time:data.now}
         return r;
 }

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import InputComponent from './components/InputComponent/InputComponent';
 import DisplayComponent from './components/DisplayComponents/DisplayNutriments'
-import BACKEND from './.config.js'
+import {APICALL,BACKENDINPUT,BACKENDOUTPUT} from './.config'
 function App() {
 
     const [barcode, setBarcode] = useState("")
     const [has_submitted,set_has_submitted] = useState(true)
-    const [json_data, setJson_data] = useState()
+    const temp:any = {totals:[]}
+    const [json_data, setJson_data] = useState(temp)
     const handleChange = (e: any) => {
         setBarcode(e.target.value);
     }
@@ -22,12 +22,13 @@ function App() {
                 },
                 body: JSON.stringify(d)
         }
-        fetch(BACKEND, options).then(r=>r.json()).then(res=>console.log(res))
+        fetch(BACKENDINPUT, options).then(r=>r.json()).then(res=>console.log(res))
     }
     const handleSubmit = (e: any) => {
         if (e.code === "Enter") {
             console.log("barcode is", barcode)
-            fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`)
+            const API:any = APICALL(barcode)
+            fetch(API)
                 .then((data) => data.json())
                 .then((d: any) => handle_json(d))
                 .then(()=> set_has_submitted(prev=>!prev))
@@ -35,17 +36,17 @@ function App() {
     }
     useEffect(() => {
         console.log("data changed", json_data)
-        const path=BACKEND+"/get_report"
         const options:any = {
-            method: 'GET',
+            method: 'POST',
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json'
             },
         }
-        fetch(path, options)
+        fetch(BACKENDOUTPUT, options)
         .then(r=>r.json())
         .then(res=>{setJson_data(res)
+            console.log("yay!")
             console.log(res);
         })
 
@@ -57,7 +58,7 @@ function App() {
             </header>
             <InputComponent props={{ handleChange, handleSubmit, barcode }}
             />
-            <DisplayComponent props={json_data} />
+            <DisplayComponent totals={json_data.totals} calories={json_data.calories}/>
         </div>
     );
 }
