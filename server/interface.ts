@@ -215,3 +215,14 @@
     }
 
 
+    export    interface ReportItem{
+        value:number;
+        unit:String;
+        percentage:String;
+    }
+    export   interface Report{
+        type:String,
+        calories:number;
+        totals:Report[],
+        time:Date
+    }

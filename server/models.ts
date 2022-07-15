@@ -1,5 +1,5 @@
 import { Schema, model, connect,Mixed, Mongoose} from 'mongoose';
-import {Meal,Product} from './interface' 
+import {Meal,Product,Report,ReportItem} from './interface' 
 import conn from './.config'
 
 function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {
@@ -82,15 +82,7 @@ const mealSchema = new Schema<Meal>({
     product: { type: {} as Product, required: true },
     time_stamp: {type:Date, required: true}
   });
-interface ReportItem{
-    value:number;
-    unit:string;
-    percentage:string;
-}
-interface Report{
-    calories:number;
-    totals:Report[]
-}
+
 const reportItemSchema = new Schema<ReportItem>({
     value:{type:Number,required:true},
     unit:{type:String,required:true},
@@ -98,45 +90,62 @@ const reportItemSchema = new Schema<ReportItem>({
 })
 
 const ReportSchema = new Schema<Report>({
+    type:String,
     calories: { type: Number, required: true },
-    totals: [reportItemSchema]
+    totals: [reportItemSchema],
+    time:{type: Date, required: true}
   });
 
 const ReportModel = model<Report>('Report',ReportSchema)
 const mealModel = model<Meal>('Meal',mealSchema)
+
+export function get_date_filter (then:Date,now:Date){
+    return {
+        day: {
+            $gt: ( now.toISOString()),
+            $lt: ( then.toISOString())
+        }
+    }
+}
+
+
+
+const exportReport = (data:any)=>{
+    const r:Report= {
+        type:data.report_type,
+        calories:data.result.reduce((acc:number,x:Meal)=>acc+x.product.nutriments.energy_value),
+        totals:data.result.map((model:any)=>{
+            const props:any = [];
+            for(const x in model){
+                if(typeof x =='number'){
+                    props.push(x)
+                }
+            }
+            return props;
+        }).reduce((acc:any[],x:any)=>{
+            Object.entries(x).every((kp:any)=>{
+                if(!acc.hasOwnProperty(kp[0]))
+                    acc[kp[0]]=0;
+                acc[kp[0]]+= kp[1]
+                })
+                return acc
+            },{}
+        ),
+        time:data.now}
+        return r;
+}
+export {exportReport}
 export async function Report_maker(range:number,db:any){
     //get data from server
     const now:Date = new Date()
     const then:Date = new Date()
     then.setDate(now.getDate()-range);
-    db.collection("meals").find({
-        day: {
-            $gt: ( now.toISOString()),
-            $lt: ( then.toISOString())
-        }
-    }).toArray((err:Error,result:any)=>{
+    const dateFilter:any = get_date_filter(then,now);
+    const report_type:string=range==1?"day":range==7?"week":"fortnight"
+    db.collection("meals").find(dateFilter).toArray((err:Error,result:any)=>{
         if(err) throw err
         console.log(result);        
-
-        const report:Report ={
-            calories:result.reduce((acc:number,x:Meal)=>acc+x.product.nutriments.energy),
-            totals:result.map((model:any)=>{
-                const props:any = [];
-                for(const x in model){
-                    if(typeof x =='number'){
-                        props.push(x)
-                    }
-                }
-                return props;
-            }).reduce((acc:any[],x:any)=>{
-                Object.entries(x).every((kp:any)=>{
-                    if(!acc.hasOwnProperty(kp[0]))
-                        acc[kp[0]]=0;
-                    acc[kp[0]]+= kp[1]
-                })
-                return acc
-            },{})
-        }
+        const report:Report = exportReport({report_type,result,now})
         const r = new ReportModel(report)
         r.save()
     })
@@ -155,6 +164,8 @@ export async function importMeal(data:any){
     console.log(meal)
 
 }
+
+
 
 const connDb = () => {
     return connect(conn)

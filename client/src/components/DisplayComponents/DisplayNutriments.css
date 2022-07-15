@@ -1,4 +1,4 @@
-.DisplayComponentNutriments{
+.DisplayNutrimentsTable{
     font-size:8px;
     background-color: white;
     color:black;
@@ -6,6 +6,6 @@
     border:solid;
     border-color:red;
 }
-.DisplayComponentNutriments>:nth-child(2n-1){
+.DisplayNutrimentsTable>:nth-child(2n-1){
     background-color: #DDDDDD;
 }
