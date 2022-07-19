@@ -13,7 +13,7 @@ import cors from 'cors'
 app.use(cors())
 app.use(express.json());
 app.get('/', (req:Request, res:Response) => {
-   
+   console.log("got root")
 })
 app.post('/get_report', async (req:Request, res:Response) => {
     console.log("heard");
