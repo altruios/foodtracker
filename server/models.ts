@@ -1,5 +1,5 @@
 import { Schema, model, connect,Mixed, Mongoose} from 'mongoose';
-import {Meal,Product,Report,ReportItem} from './interface' 
+import {Meal,Product,Report,ReportItem,Nutriments} from './interface' 
 import conn from './.config'
 
 const mealSchema = new Schema<Meal>({
@@ -46,7 +46,19 @@ export function get_date_filter (then:Date,now:Date){
 
 const exportReport = (data:any)=>{
     console.log("data is",data);
-    const calories:number = data.result.reduce((acc:number,x:Meal)=>acc+x.product.nutriments.energy_value,0)
+    const calories:number = data.result.reduce((acc:number,x:Meal)=>{
+        const n:Nutriments = x.product.nutriments;
+        let add = 0;
+        try{
+            add=n['energy-kcal_serving']
+        }
+        catch(e){    
+            add=n.energy
+        }
+
+        acc+=add
+        return acc;
+    },0)
     const totals = data.result.reduce((acc:any,x:any)=>{
         const nutriments = x.product.nutriments;
         console.log("n",nutriments)

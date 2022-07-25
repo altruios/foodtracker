@@ -29,11 +29,18 @@ app.post('/get_report', async (req:Request, res:Response) => {
 })
 
 app.post('/input', (req:Request, res:Response) => {
-    console.log("heard");
+    const status = {status:"failure"};
+
+    try{
     const d:any = req.body;
     importMeal(d)
     console.log("success!")
-
+    status.status="success"
+    res.send(status)
+    }
+    catch{
+        res.send(status)
+    }
 })
 
 const one_day:number = 1000*60*60*24

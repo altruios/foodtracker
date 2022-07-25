@@ -83,6 +83,7 @@
         carbohydrates_unit: string;
         carbohydrates_value: number;
         energy: number;
+        'energy-kcal_serving':number,
         'energy-kcal': number;
         'energy-kcal_100g': number;
         'energy-kcal_unit': string;

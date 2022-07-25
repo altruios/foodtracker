@@ -5,7 +5,9 @@
 node_modules/
 /.pnp
 .pnp.js
-
+/mongo-init**
+/mongo--vol**
+.data
 # testing
 /coverage
 
