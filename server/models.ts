@@ -9,9 +9,11 @@ const mealSchema = new Schema<Meal>({
   });
 
 const reportItemSchema = new Schema<ReportItem>({
-    value:{type:Number,required:true},
-    unit:{type:String,required:true},
-    percentage:{type:String,required:true},
+    label:{type:String,required:true},
+    total:{type:Number,required:false},
+    unit:{type:String,required:false},
+    value:{type:Number,required:false},
+
 })
 
 const ReportSchema = new Schema<Report>({
@@ -48,6 +50,7 @@ const exportReport = (data:any)=>{
     console.log("data is",data);
     const calories:number = data.result.reduce((acc:number,x:Meal)=>{
         const n:Nutriments = x.product.nutriments;
+        console.log(n,"is n")
         let add = 0;
         try{
             add=n['energy-kcal_serving']
@@ -59,20 +62,81 @@ const exportReport = (data:any)=>{
         acc+=add
         return acc;
     },0)
+    console.log(data.result,"is result");
     const totals = data.result.reduce((acc:any,x:any)=>{
-        const nutriments = x.product.nutriments;
-        console.log("n",nutriments)
-        for(const kp in nutriments){
-            console.log(kp,":kp")
-            if(!acc.hasOwnProperty(kp))
-                acc[kp]=nutriments[kp]
-            if(typeof nutriments[kp]=="number")
-                acc[kp]+=nutriments[kp]
+        const n = x.product.nutriments;
+        const values_array=[
+            {"calcium":[
+                n.calcium||0,
+                n.calcium_unit||"",
+                n.calcium_value||0]
+            },
+            {"carbohydrates":[
+                n.carbohydrates||0,
+                n.carbohydrates_unit||"",
+                n.carbohydrates_value||0]
+            },
+            {"fat":[
+                n.fat||0,
+                n.fat_unit||"",
+                n.fat_value||0]
+            },
+            {"fiber":[
+                n.fiber||
+                0,n.fiber_unit||"",
+                n.fiber_value||0]
+            },
+            {"iron":[
+                n.iron||0,
+                n.iron_unit||"",
+                n.iron_value||0]
+            },
+            {"potassium":[
+                n.potassium||0,
+                n.potassium_unit||"",
+                n.potassium_value||0]
+            },
+            {"proteins":[
+                n.proteins||0,
+                n.proteins_unit||"",
+                n.proteins_value||0]
+            },
+            {"salt":[n.salt||0,
+                n.salt_unit||"",
+                n.salt_value||0]
+            },
+            {"saturated-fat":[
+                n["saturated-fat"]||0,
+                n['saturated-fat_unit']||"",
+                n["saturated-fat_value"]||0]
+            },
+            {"sodium":[
+                n.sodium||0,
+                n.sodium_unit||"",
+                n.sodium_value||0]
+            },
+            {"sugars":[
+                n.sugars||0,
+                n.sugars_unit||"",
+                n.sugars_value||0]
+            },
+        ]
+        values_array.forEach(nutr=>{
+            console.log(nutr)
+            const key = Object.keys(nutr)[0]
+            console.log(key,"is key");
+            if(!acc[key]){
+                acc[key]=nutr;
+            }else{
+                console.log(acc[key])
+                const merged = Object.values(nutr).map((x:any,i:any)=>i%2==0?x+acc[key][i]:x)
+                acc[key]=merged
             }
-        
-            return acc
+        })
+        return acc;
         },{}
     )
+    console.log(totals,"is totals");
     const r:Report= {
         type:data.report_type,
         calories,
@@ -90,7 +154,11 @@ export async function Report_maker(range:number,db:any){
     const report_type:string=range==1?"day":range==7?"week":"fortnight"
     db.collection("meals").find(dateFilter).toArray((err:Error,result:any)=>{
         if(err) throw err
-        console.log(result);        
+        console.log(result);     
+        if(result.length==0){ 
+            console.error("no report to make");
+            return
+        }   
         const report:Report = exportReport({report_type,result,now})
         const r = new ReportModel(report)
         r.save()

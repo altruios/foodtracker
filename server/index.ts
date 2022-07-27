@@ -51,10 +51,12 @@ const one_fortnight:number = one_week*2;
 connDb().then(async (DB) => {
     app.listen(port, () => {
         console.log(`Example app listening on port ${port}`)
-    })         
-    setInterval(()=>{Report_maker(1,DB)},one_day)
-    setInterval(()=>{Report_maker(7,DB)},one_week)
-    setInterval(()=>{Report_maker(14,DB)},one_fortnight)
+    })    
+    const db = DB.connections[0].db;
+
+    setInterval(()=>{Report_maker(1,db)},one_day)
+    setInterval(()=>{Report_maker(7,db)},one_week)
+    setInterval(()=>{Report_maker(14,db)},one_fortnight)
 
 },(err)=>{
     console.log("error hit")

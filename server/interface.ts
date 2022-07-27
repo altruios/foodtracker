@@ -217,13 +217,14 @@
 
 
     export    interface ReportItem{
+        label:string;
+        total:number;
         value:number;
         unit:String;
-        percentage:String;
     }
     export   interface Report{
         type:String,
         calories:number;
-        totals:Report[],
+        totals:ReportItem[],
         time:Date
     }
