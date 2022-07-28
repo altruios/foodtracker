@@ -6,9 +6,11 @@ import {APICALL,BACKENDINPUT,BACKENDOUTPUT} from'./.config'
 import btn from './assets/btn.png'
 
 const DEFAULT_IMAGE = Image.resolveAssetSource(btn).uri;
+const dummy_image = {uri:DEFAULT_IMAGE}
+const dummy_meal = {code:0,product:{product_name:"name of meal",images:[],nutriments:{energy:0,energy_unit:""}}}
+
+
 export default function App() {
-    const dummy_meal = {code:0,product:{product_name:"name of meal",images:[],nutriments:{energy:0,energy_unit:""}}}
-    const dummy_image = {uri:DEFAULT_IMAGE}
 
     const [barcode,setBarcode] = useState("")
     const [meal,setMeal]=useState(dummy_meal)
@@ -184,17 +186,17 @@ export default function App() {
 const parse_for_image_uri=(product:any,type:string)=>{
     switch(type){
         case "main":
-            return product.selected_images.front.display.fr||
-            product.image_front_small_url||
-            product.image_front_url || 
-            product.image_url||""
+            return product?.selected_images?.front?.display?.fr||
+            product?.image_front_small_url||
+            product?.image_front_url || 
+            product?.image_url||dummy_image.uri
         case "ingredients":
-            return product.selected_images.ingredients.display.fr||
-            product.image_ingredients_small_url||""
+            return product?.selected_images?.ingredients?.display?.fr||
+            product?.image_ingredients_small_url||dummy_image.uri
         case "nutrition":
-            return product.selected_images.nutrition.display.fr||
-            product.image_nutrition_small_url||
-            "";
+            return product?.selected_images?.nutrition?.display?.fr||
+            product?.image_nutrition_small_url||
+            dummy_image.uri;
 
         }
     

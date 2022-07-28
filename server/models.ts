@@ -68,41 +68,41 @@ const exportReport = (data:any)=>{
         const values_array=[
             {"calcium":[
                 n.calcium||0,
-                n.calcium_unit||"",
+                n.calcium_unit||"?",
                 n.calcium_value||0]
             },
             {"carbohydrates":[
                 n.carbohydrates||0,
-                n.carbohydrates_unit||"",
+                n.carbohydrates_unit||"?",
                 n.carbohydrates_value||0]
             },
             {"fat":[
                 n.fat||0,
-                n.fat_unit||"",
+                n.fat_unit||"?",
                 n.fat_value||0]
             },
             {"fiber":[
                 n.fiber||
-                0,n.fiber_unit||"",
+                0,n.fiber_unit||"?",
                 n.fiber_value||0]
             },
             {"iron":[
                 n.iron||0,
-                n.iron_unit||"",
+                n.iron_unit||"?",
                 n.iron_value||0]
             },
             {"potassium":[
                 n.potassium||0,
-                n.potassium_unit||"",
+                n.potassium_unit||"?",
                 n.potassium_value||0]
             },
             {"proteins":[
                 n.proteins||0,
-                n.proteins_unit||"",
+                n.proteins_unit||"?",
                 n.proteins_value||0]
             },
             {"salt":[n.salt||0,
-                n.salt_unit||"",
+                n.salt_unit||"?",
                 n.salt_value||0]
             },
             {"saturated-fat":[
@@ -122,14 +122,26 @@ const exportReport = (data:any)=>{
             },
         ]
         values_array.forEach(nutr=>{
-            console.log(nutr)
-            const key = Object.keys(nutr)[0]
+            console.log(nutr,"is nutr")
+            const key:string = Object.keys(nutr)[0]
+            const values:any= Object.values(nutr)[0]
+            console.log(values[0],"is vlaues");
             console.log(key,"is key");
             if(!acc[key]){
-                acc[key]=nutr;
+                console.log("no ",key,"in return yet")
+                acc[key]=values
             }else{
+                console.log("else")
                 console.log(acc[key])
-                const merged = Object.values(nutr).map((x:any,i:any)=>i%2==0?x+acc[key][i]:x)
+                const merged = values.map((x:any,i:number)=>{
+                    if(i%2==0&&i!=0){
+                        console.log(x,i,"is x", acc[key],"is acc key",x+acc[key],"is result");
+                        return x+acc[key][i]
+
+                    }
+                    console.log("x,acci",x,acc[key][i])
+                    return x
+                })
                 acc[key]=merged
             }
         })
